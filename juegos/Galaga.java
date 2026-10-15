@@ -6,124 +6,178 @@ import utils.InputHelper;
 import java.util.Scanner;
 
 public class Galaga extends Juego {
-    private final int FILAS = 6;
+    private final int FILAS = 7;
     private final int COLUMNAS = 7;
-    private String[][] tablero;
-    private int posicionJugador;
+    private int posJ1; 
+    private int posJ2; 
+    private boolean turnoJ1;
+    private String nombreJ2;
+    private int puntosJ2;
 
     public Galaga(Jugador jugador) {
         super(jugador);
-        this.tablero = new String[FILAS][COLUMNAS];
-        this.posicionJugador = 3;
+        this.posJ1 = 3; 
+        this.posJ2 = 3; 
+        this.turnoJ1 = true; 
+        this.puntosJ2 = 0;
     }
 
     @Override
-    public String getNombreJuego() { return "Galaga Express"; }
+    public String getNombreJuego() { 
+        return "Galaga VS (2 Jugadores)"; 
+    }
 
     @Override
     public void start(Scanner scanner) {
-        System.out.println("\n[ GALAGA ] Bienvenido a Galaga Express, " + jugador.getNombre() + "!");
-        inicializarEnemigos();
+        System.out.println("\n[ GALAGA VS ] Jugador 1 (Abajo): " + jugador.getNombre());
+        this.nombreJ2 = InputHelper.leerTexto(scanner, "Ingrese el nombre del Jugador 2 (Arriba): ");
+
+        System.out.println("\nControles " + jugador.getNombre() + ": [A] Izquierda | [D] Derecha | [S] Mantener");
+        System.out.println("Controles " + nombreJ2 + ": [J] Izquierda | [L] Derecha | [K] Mantener");
+        InputHelper.leerTexto(scanner, "\nPresione ENTER para empezar la batalla...");
 
         boolean jugando = true;
+        
         while (jugando) {
             mostrarTablero();
-            System.out.println("Puntos acumulados: " + jugador.getPuntos());
-            System.out.println("Movimientos: [A] Izquierda | [D] Derecha | [S] Mantenerse | [R] Retirarse");
-            String mov = InputHelper.leerTexto(scanner, "Elija su opción: ").toUpperCase();
+            String jugadorActual = turnoJ1 ? jugador.getNombre() : nombreJ2;
+            System.out.println("\n--- Turno de " + jugadorActual + " ---");
+            
+            String mov = InputHelper.leerTexto(scanner, "Elija movimiento o [R] para retirarse: ").toUpperCase();
 
             if (mov.equals("R")) {
-                jugando = false;
+                System.out.println(jugadorActual + " se ha retirado de la batalla.");
                 break;
             }
 
-            if (mov.equals("A") && posicionJugador > 0) posicionJugador--;
-            else if (mov.equals("D") && posicionJugador < COLUMNAS - 1) posicionJugador++;
+            moverJugador(mov);
 
-            String disparo = InputHelper.leerTexto(scanner, "¿Desea disparar en este turno? (S/N): ").toUpperCase();
+            String disparo = InputHelper.leerTexto(scanner, "¿Desea disparar? (S/N): ").toUpperCase();
             if (disparo.equals("S")) {
-                procesarDisparo();
+                if (procesarDisparo()) {
+                    break;
+                }
             }
 
-            if (!hayEnemigos()) {
-                mostrarTablero();
-                System.out.println("\n[!] ¡Sector limpio! Generando nueva oleada...");
-                InputHelper.pausa(1000);
-                inicializarEnemigos();
-            }
+            turnoJ1 = !turnoJ1;
         }
 
-        System.out.println("\nJuego terminado. Puntuación final: " + jugador.getPuntos() + " pts");
+        System.out.println("\nBatalla terminada.");
+        System.out.println("Puntos de " + jugador.getNombre() + ": " + jugador.getPuntos() + " pts");
+        System.out.println("Puntos de " + nombreJ2 + ": " + puntosJ2 + " pts");
         guardarEstadisticas();
     }
 
-    private void inicializarEnemigos() {
-        for (int f = 0; f < FILAS; f++) {
-            for (int c = 0; c < COLUMNAS; c++) {
-                tablero[f][c] = "   "; 
-            }
-        }
-        for (int c = 1; c < COLUMNAS - 1; c++) {
-            tablero[0][c] = " H ";
-            tablero[1][c] = " H ";
+    private void moverJugador(String mov) {
+        if (turnoJ1) {
+            if (mov.equals("A") && posJ1 > 0) posJ1--;
+            else if (mov.equals("D") && posJ1 < COLUMNAS - 1) posJ1++;
+        } else {
+            if (mov.equals("J") && posJ2 > 0) posJ2--;
+            else if (mov.equals("L") && posJ2 < COLUMNAS - 1) posJ2++;
         }
     }
 
     private void mostrarTablero() {
         System.out.println("\n".repeat(15));
         System.out.println("===============================");
-        for (int f = 0; f < FILAS - 1; f++) {
+        
+        for (int f = 0; f < FILAS; f++) {
             for (int c = 0; c < COLUMNAS; c++) {
-                System.out.print(tablero[f][c] + " ");
+                if (f == 0 && c == posJ2) {
+                    System.out.print(" V  "); 
+                } else if (f == FILAS - 1 && c == posJ1) {
+                    System.out.print(" A  "); 
+                } else {
+                    System.out.print("    "); 
+                }
             }
             System.out.println();
         }
-        for (int c = 0; c < COLUMNAS; c++) {
-            if (c == posicionJugador) System.out.print(" A  ");
-            else System.out.print("    ");
-        }
-        System.out.println("\n===============================");
+        System.out.println("===============================");
     }
 
-    private void procesarDisparo() {
-        for (int f = FILAS - 2; f >= 0; f--) {
-            if (!tablero[f][posicionJugador].trim().equals("")) {
-                animarExplosion(f, posicionJugador);
-                jugador.sumarPuntos(100);
-                return;
-            } else {
-                tablero[f][posicionJugador] = " . ";
-                mostrarTablero();
-                InputHelper.pausa(100);
-                tablero[f][posicionJugador] = "   ";
-            }
-        }
-        mostrarTablero();
-        System.out.println("[-] El disparo se perdió en el vacío.");
-    }
-
-    private void animarExplosion(int f, int c) {
-        tablero[f][c] = " X ";
-        mostrarTablero();
-        InputHelper.pausa(250);
-        tablero[f][c] = "...";
-        mostrarTablero();
-        InputHelper.pausa(250);
-        tablero[f][c] = "   ";
-        mostrarTablero();
-    }
-
-    private boolean hayEnemigos() {
-        for (int f = 0; f < FILAS - 1; f++) {
+    private void dibujarLáser(int filaActual, int columna, String simboloLaser) {
+        System.out.println("\n".repeat(15));
+        System.out.println("===============================");
+        for (int f = 0; f < FILAS; f++) {
             for (int c = 0; c < COLUMNAS; c++) {
-                if (tablero[f][c].trim().equals("H")) return true;
+                if (f == 0 && c == posJ2) {
+                    System.out.print(" V  ");
+                } else if (f == FILAS - 1 && c == posJ1) {
+                    System.out.print(" A  ");
+                } else if (f == filaActual && c == columna) {
+                    System.out.print(simboloLaser); 
+                } else {
+                    System.out.print("    ");
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("===============================");
+        InputHelper.pausa(100); 
+    }
+
+    private boolean procesarDisparo() {
+        if (turnoJ1) {
+            for (int f = FILAS - 2; f >= 0; f--) {
+                dibujarLáser(f, posJ1, " |  ");
+                
+                if (f == 0 && posJ1 == posJ2) {
+                    animarExplosion(0, posJ2);
+                    System.out.println("¡Impacto directo! ¡" + jugador.getNombre() + " GANA LA BATALLA! (+200 pts)");
+                    jugador.sumarPuntos(200);
+                    return true;
+                }
+            }
+        } else {
+            for (int f = 1; f < FILAS; f++) {
+                dibujarLáser(f, posJ2, " |  ");
+                
+                if (f == FILAS - 1 && posJ2 == posJ1) {
+                    animarExplosion(FILAS - 1, posJ1);
+                    System.out.println("¡Impacto directo! ¡" + nombreJ2 + " GANA LA BATALLA! (+200 pts)");
+                    puntosJ2 += 200;
+                    return true;
+                }
             }
         }
+        
+        System.out.println("[-] El disparo falló.");
+        InputHelper.pausa(600);
         return false;
+    }
+
+    private void animarExplosion(int filaDestruida, int columna) {
+        String[] estados = {" X  ", "... ", "    "};
+        
+        for (String estado : estados) {
+            System.out.println("\n".repeat(15));
+            System.out.println("===============================");
+            for (int f = 0; f < FILAS; f++) {
+                for (int c = 0; c < COLUMNAS; c++) {
+                    if (f == filaDestruida && c == columna) {
+                        System.out.print(estado);
+                    } else if (f == 0 && c == posJ2 && filaDestruida != 0) {
+                        System.out.print(" V  ");
+                    } else if (f == FILAS - 1 && c == posJ1 && filaDestruida != FILAS - 1) {
+                        System.out.print(" A  ");
+                    } else {
+                        System.out.print("    ");
+                    }
+                }
+                System.out.println();
+            }
+            System.out.println("===============================");
+            InputHelper.pausa(300);
+        }
     }
 
     @Override
     public void guardarEstadisticas() {
         Estadisticas.registrar(getNombreJuego(), jugador.getNombre(), jugador.getPuntos());
+        if (nombreJ2 != null && !nombreJ2.trim().isEmpty()) {
+            Estadisticas.registrar(getNombreJuego(), nombreJ2, puntosJ2);
+        }
     }
 }
