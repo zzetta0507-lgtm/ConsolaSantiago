@@ -31,6 +31,7 @@ Implementación de la interfaz nativa de Java para dotar a los registros de punt
 
 ## 📂 Estructura del Proyecto
 
+```text
 Consola/
 ├── bin/                        # Archivos compilados (.class)
 ├── src/                        # (Opcional) Código fuente si se usa estructura de paquetes completa
@@ -48,16 +49,20 @@ Consola/
 │   └── InputHelper.java        # Validaciones de Scanner y manejo de Threads
 └── Main.java                   # Punto de entrada y motor de carga dinámica
 
-## 🔌 Cómo añadir un juego nuevo (Plug & Play)
+```
+🔌 Cómo añadir un juego nuevo (Plug & Play)
+Gracias a la implementación de Java Reflection en la clase Main, agregar un nuevo juego no requiere tocar el código del menú.
 
-Gracias a la implementación de Java Reflection en la clase `Main`, agregar un nuevo juego no requiere tocar el código del menú.
+Crea un nuevo archivo .java dentro de la carpeta juegos/.
 
-1. Crea un nuevo archivo `.java` dentro de la carpeta `juegos/`.
-2. Asegúrate de que la clase herede de `Juego`: `public class MiNuevoJuego extends Juego`.
-3. Implementa el constructor que reciba al `Jugador` llamando a `super(jugador);`.
-4. Sobrescribe los métodos `start(Scanner sc)`, `getNombreJuego()` y `guardarEstadisticas()`.
-5. Ejecuta el proyecto. El menú detectará automáticamente el archivo `.class` (o `.java` compilado) y lo agregará como una nueva opción ejecutable.
+Asegúrate de que la clase herede de Juego: public class MiNuevoJuego extends Juego.
 
----
+Implementa el constructor que reciba al Jugador llamando a super(jugador);.
+
+Sobrescribe los métodos start(Scanner sc), getNombreJuego() y guardarEstadisticas().
+
+Ejecuta el proyecto. El menú detectará automáticamente el archivo .class (o .java compilado) y lo agregará como una nueva opción ejecutable.
+
 Autor:
-* Santiago Alonzo Vargas Céspedes
+
+Santiago Alonzo Vargas Céspedes
