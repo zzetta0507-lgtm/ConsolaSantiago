@@ -50,6 +50,19 @@ Consola/
 └── Main.java                   # Punto de entrada y motor de carga dinámica
 
 ```
+## 🧩 Integración de Código de Terceros y Escalabilidad
+
+Gracias a la arquitectura modular basada en principios de Programación Orientada a Objetos (POO), la integración de código desarrollado por terceros (como el juego Pong retro) no representó mayores problemas ni conflictos estructurales. 
+
+El sistema fue diseñado con un enfoque de alto nivel de cohesión y bajo acoplamiento. Al definir un contrato estricto mediante la interfaz `Jugable` y la clase abstracta genérica `Juego`, acoplar mecánicas externas resultó ser un proceso sumamente directo. 
+
+Las únicas adaptaciones necesarias sobre el código de terceros consistieron en:
+1. Heredar de la clase base `Juego`.
+2. Encapsular la lógica principal de la partida dentro del método obligatorio `start(Scanner)`.
+3. Reemplazar los métodos de entrada de datos originales por la clase utilitaria del sistema (`InputHelper`).
+
+Además, la implementación de carga dinámica mediante *Java Reflection* demostró su eficacia: una vez adaptado el archivo externo, el motor principal (`Main.java`) detectó, instanció y agregó el nuevo juego al menú automáticamente, sin requerir ninguna modificación manual en el código fuente de la consola ni en la lógica de registro del Top 3 de estadísticas. Esto valida la robustez, flexibilidad y escalabilidad de la arquitectura propuesta.
+
 🔌 Cómo añadir un juego nuevo (Plug & Play)
 Gracias a la implementación de Java Reflection en la clase Main, agregar un nuevo juego no requiere tocar el código del menú.
 
